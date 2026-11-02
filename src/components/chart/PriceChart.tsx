@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef } from 'react'
 import { useTranslation } from 'react-i18next'
 import {
+  type AutoscaleInfo,
   CandlestickSeries,
   createChart,
   HistogramSeries,
@@ -62,6 +63,8 @@ export function PriceChart({ bars, version, interval, indicators, fills = [], po
   const handlesRef = useRef<Handles | null>(null)
   /** The data version the series hold, and the time of the last candle they were given */
   const shownRef = useRef<{ version: number; lastT: number | null }>({ version: -1, lastT: null })
+  /** Position levels (entry, liquidation) the price scale must keep in view */
+  const levelsRef = useRef<number[]>([])
 
   // Built once; later prop changes are applied to the same chart.
   useEffect(() => {
@@ -85,6 +88,20 @@ export function PriceChart({ bars, version, interval, indicators, fills = [], po
       wickDownColor: COLORS.down,
       priceLineColor: 'rgba(255,255,255,0.3)',
       priceLineStyle: LineStyle.Dotted,
+      // The scale normally fits the candles only; stretch it so the position's entry and
+      // liquidation lines are always on screen, however far away they are
+      autoscaleInfoProvider: (base: () => AutoscaleInfo | null) => {
+        const info = base()
+        const levels = levelsRef.current
+        if (!info?.priceRange || !levels.length) return info
+        return {
+          ...info,
+          priceRange: {
+            minValue: Math.min(info.priceRange.minValue, ...levels),
+            maxValue: Math.max(info.priceRange.maxValue, ...levels),
+          },
+        }
+      },
     })
     candle.priceScale().applyOptions({ scaleMargins: { top: 0.1, bottom: 0.2 } })
 
@@ -230,13 +247,18 @@ export function PriceChart({ bars, version, interval, indicators, fills = [], po
     if (!h) return
     for (const line of h.priceLines) h.candle.removePriceLine(line)
     h.priceLines = []
-    if (Math.abs(qty) < 1e-12) return
-    const add = (price: number, color: string) =>
-      h.priceLines.push(
-        h.candle.createPriceLine({ price, color, lineStyle: LineStyle.Dashed, lineWidth: 1, axisLabelVisible: true, title: '' }),
-      )
-    add(entry, qty > 0 ? COLORS.up : COLORS.down)
-    if (liq != null && liq > 0) add(liq, COLORS.liq)
+    const open = Math.abs(qty) >= 1e-12
+    levelsRef.current = open ? [entry, ...(liq != null && liq > 0 ? [liq] : [])] : []
+    if (open) {
+      const add = (price: number, color: string) =>
+        h.priceLines.push(
+          h.candle.createPriceLine({ price, color, lineStyle: LineStyle.Dashed, lineWidth: 1, axisLabelVisible: true, title: '' }),
+        )
+      add(entry, qty > 0 ? COLORS.up : COLORS.down)
+      if (liq != null && liq > 0) add(liq, COLORS.liq)
+    }
+    // Refit the scale to the new levels, also after the player dragged it by hand
+    h.candle.priceScale().applyOptions({ autoScale: true })
   }, [qty, entry, liq])
 
   return (
