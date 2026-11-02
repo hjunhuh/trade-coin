@@ -125,6 +125,25 @@ describe('liquidation', () => {
     expect(short.margin + unrealizedPnl(short, sLiq)).toBeCloseTo(FREE.maintenanceRate * Math.abs(short.qty) * sLiq, 9)
   })
 
+  it('moves closer to the entry as leverage grows: about 1 / leverage away', () => {
+    let previous = Infinity
+    for (const leverage of [2, 5, 10, 25, 50, 100]) {
+      for (const side of ['long', 'short'] as const) {
+        const p = placeOrder(newAccount(T0, 10_000), 'BTC', { side, sizePct: 100, leverage }, 100_000, T0).account.positions.BTC!
+        const distance = Math.abs(liquidationPrice(p)! / p.entry - 1)
+        const mm = CONFIG.maintenanceRate
+        // Fees come out of the budget, not the margin, so this holds exactly
+        expect(distance).toBeCloseTo((1 / leverage - mm) / (side === 'long' ? 1 - mm : 1 + mm), 9)
+        if (side === 'long') {
+          expect(distance).toBeLessThan(previous)
+          previous = distance
+        }
+      }
+    }
+    // 100x: half a percent of room
+    expect(previous).toBeLessThan(0.006)
+  })
+
   it('has no liquidation price for an unleveraged long', () => {
     const a = placeOrder(newAccount(T0, 1000), 'BTC', { side: 'long', sizePct: 100, leverage: 1 }, 100, T0, FREE).account
     expect(liquidationPrice(a.positions.BTC!, FREE)).toBeNull()
