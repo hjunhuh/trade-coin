@@ -1,0 +1,5 @@
+# Every screen shows the visitor's own virtual account, which means nothing to a search engine.
+User-agent: *
+Allow: /
+Disallow: /trade/
+Disallow: /account

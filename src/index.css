@@ -1,0 +1,205 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+
+/* Dark only. The `dark` class is always on <html>; tokens are defined once on :root. */
+@custom-variant dark (&:is(.dark *));
+
+:root {
+  color-scheme: dark;
+  --radius: 0.625rem;
+
+  --background: #09090b;
+  --foreground: #fafafa;
+  --card: #111113;
+  --card-foreground: #fafafa;
+  --popover: #141416;
+  --popover-foreground: #fafafa;
+  --primary: #fafafa;
+  --primary-foreground: #09090b;
+  --secondary: #1c1c1f;
+  --secondary-foreground: #fafafa;
+  --muted: #18181b;
+  --muted-foreground: #8b8b94;
+  --accent: #1f1f23;
+  --accent-foreground: #fafafa;
+  --destructive: #ef4444;
+  --border: rgb(255 255 255 / 0.06);
+  --input: rgb(255 255 255 / 0.09);
+  --ring: rgb(255 255 255 / 0.25);
+
+  /* Market colors */
+  --up: #22c55e;
+  --down: #ef4444;
+
+  --chart-1: #60a5fa;
+  --chart-2: #22c55e;
+  --chart-3: #f59e0b;
+  --chart-4: #a78bfa;
+  --chart-5: #f472b6;
+
+  --sidebar: #0c0c0e;
+  --sidebar-foreground: #fafafa;
+  --sidebar-primary: #fafafa;
+  --sidebar-primary-foreground: #09090b;
+  --sidebar-accent: #1c1c1f;
+  --sidebar-accent-foreground: #fafafa;
+  --sidebar-border: rgb(255 255 255 / 0.06);
+  --sidebar-ring: rgb(255 255 255 / 0.25);
+}
+
+@theme inline {
+  --font-sans: "Geist", "Pretendard Variable", ui-sans-serif, system-ui, -apple-system, "Apple SD Gothic Neo", sans-serif;
+  --font-mono: "Geist Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-up: var(--up);
+  --color-down: var(--down);
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-ring: var(--sidebar-ring);
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  html,
+  body {
+    @apply bg-background text-foreground;
+    -webkit-font-smoothing: antialiased;
+  }
+  html,
+  body {
+    /* No pull-to-refresh / bounce while trading */
+    overscroll-behavior: none;
+  }
+  /* Instant taps: no double-tap-zoom delay, no grey tap flash */
+  button,
+  [role="radio"],
+  a {
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
+  }
+  body {
+    min-height: 100dvh;
+    overflow-x: hidden;
+    word-break: keep-all;
+    overflow-wrap: break-word;
+  }
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: rgb(255 255 255 / 0.1) transparent;
+  }
+}
+
+/* Page entrance: what a screen shows fades in when it mounts, so every way of getting there
+   (links, back/forward, switching markets) looks the same. Opacity only: a transform would pin the
+   wizards' position:fixed bottom bars to the animating element. `backwards` hides an element
+   only during its stagger delay and holds nothing once it's done. Kept out of `@theme inline`
+   so the reduced-motion override below still reaches it. */
+@theme {
+  --animate-appear: appear 300ms cubic-bezier(0.33, 1, 0.68, 1) backwards;
+  @keyframes appear {
+    from {
+      opacity: 0;
+    }
+  }
+}
+
+/* Children fade in one after another. :where() keeps every rule at zero specificity, so a
+   child's own animation (pulsing skeletons, the result reveal, delay-*) always wins. */
+@utility stagger {
+  :where(& > *) {
+    animation: var(--animate-appear);
+  }
+  :where(& > :nth-child(2)) {
+    animation-delay: 40ms;
+  }
+  :where(& > :nth-child(3)) {
+    animation-delay: 80ms;
+  }
+  :where(& > :nth-child(4)) {
+    animation-delay: 120ms;
+  }
+  :where(& > :nth-child(5)) {
+    animation-delay: 160ms;
+  }
+  :where(& > :nth-child(n + 6)) {
+    animation-delay: 200ms;
+  }
+}
+
+/* A transfer going through: the check pops a little as it starts drawing */
+@theme {
+  --animate-success-pop: success-pop 520ms cubic-bezier(0.34, 1.56, 0.64, 1) 300ms;
+  @keyframes success-pop {
+    40% {
+      scale: 1.08;
+    }
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --animate-appear: none;
+    --animate-success-pop: none;
+  }
+}
+
+/* A page's bottom padding plus the bottom safe area (the iPhone's home indicator) and, on touch
+   screens, room for the browser toolbar floating over it (iOS Safari), so the last content
+   scrolls fully clear of them. pb-safe-8 = 2rem + the inset + the toolbar room; on a desktop
+   both are 0 and it's plain pb-8. Pages with an ActionBar don't need it: the bar pads itself. */
+:root {
+  --toolbar-room: 0px;
+}
+@media (pointer: coarse) {
+  :root {
+    --toolbar-room: 2rem;
+  }
+}
+@utility pb-safe-* {
+  padding-bottom: calc(
+    var(--spacing) * --value(integer) + env(safe-area-inset-bottom, 0px) + var(--toolbar-room)
+  );
+}
+
+@layer utilities {
+  .num {
+    font-family: var(--font-mono);
+    font-variant-numeric: tabular-nums;
+    letter-spacing: -0.01em;
+  }
+}

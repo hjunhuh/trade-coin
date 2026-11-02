@@ -1,0 +1,53 @@
+<!doctype html>
+<!-- English unless the browser is Korean; src/i18n sets the real language on load -->
+<html lang="en" class="dark">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, viewport-fit=cover"
+    />
+    <meta name="theme-color" content="#09090b" />
+
+    <title>Trade Coin</title>
+    <meta
+      name="description"
+      content="A free crypto futures trading simulator. Go long or short on live Bitcoin and Ethereum prices with leverage, using virtual money."
+    />
+    <meta name="robots" content="index, follow" />
+
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="Trade Coin" />
+    <meta property="og:title" content="Trade Coin" />
+    <meta
+      property="og:description"
+      content="Go long or short on live Bitcoin and Ethereum prices with leverage, using virtual money."
+    />
+    <meta property="og:locale" content="en_US" />
+    <meta property="og:locale:alternate" content="ko_KR" />
+
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Geist:wght@300..800&family=Geist+Mono:wght@400..700&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css"
+    />
+  </head>
+  <body>
+    <div id="root"></div>
+    <noscript>
+      <h1>Trade Coin</h1>
+      <p>
+        A free crypto futures trading simulator. Go long or short on live
+        Bitcoin and Ethereum prices with leverage, using virtual money. Turn on
+        JavaScript to trade.
+      </p>
+    </noscript>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>
