@@ -2,15 +2,14 @@ import { useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router'
 import { ChevronRight, RotateCcw } from 'lucide-react'
-import { toast } from 'sonner'
 import { BalanceChart } from '@/components/BalanceChart'
 import { RollingNumber } from '@/components/RollingNumber'
 import { FillsTable } from '@/components/account/FillsTable'
+import { ResetDialog } from '@/components/account/ResetDialog'
 import { CoinIcon } from '@/components/trade/CoinIcon'
 import { fmtLeverage } from '@/components/trade/TradePanel'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { useLiveAccount } from '@/hooks/useLive'
 import { fmtPct, fmtPrice, fmtQty, fmtSignedUsd, fmtUsd, toneClass } from '@/lib/format'
 import { SYMBOLS } from '@/lib/market/types'
@@ -21,11 +20,9 @@ import {
   liquidationPrice,
   roe,
   sideOf,
-  STARTING_BALANCE,
   unrealizedPnl,
   type Position,
 } from '@/lib/trading/engine'
-import { resetAccount } from '@/lib/trading/store'
 import { cn } from '@/lib/utils'
 
 const CLOSING = new Set(['close', 'reduce'])
@@ -74,7 +71,7 @@ export default function AccountPage() {
 
       {bust && (
         <div className="flex items-center justify-between gap-3 rounded-xl border border-down/30 bg-down/10 px-4 py-3 text-sm">
-          <span>{t('account.bust', { amount: fmtUsd(STARTING_BALANCE, 0) })}</span>
+          <span>{t('account.bust')}</span>
           <Button size="sm" onClick={() => setResetOpen(true)}>
             {t('account.reset')}
           </Button>
@@ -127,29 +124,7 @@ export default function AccountPage() {
         {t('account.note', { fee: fmtPct(CONFIG.takerFee, 2), funding: fmtPct(CONFIG.fundingRate, 2) })}
       </p>
 
-      <Dialog open={resetOpen} onOpenChange={setResetOpen}>
-        <DialogContent className="gap-5">
-          <DialogHeader>
-            <DialogTitle>{t('account.resetTitle')}</DialogTitle>
-            <DialogDescription>{t('account.resetBody', { amount: fmtUsd(STARTING_BALANCE, 0) })}</DialogDescription>
-          </DialogHeader>
-          <div className="grid grid-cols-2 gap-2">
-            <Button variant="outline" onClick={() => setResetOpen(false)}>
-              {t('account.cancel')}
-            </Button>
-            <Button
-              variant="destructive"
-              onClick={() => {
-                resetAccount()
-                setResetOpen(false)
-                toast(t('account.resetDone', { amount: fmtUsd(STARTING_BALANCE, 0) }))
-              }}
-            >
-              {t('account.resetConfirm')}
-            </Button>
-          </div>
-        </DialogContent>
-      </Dialog>
+      <ResetDialog open={resetOpen} onOpenChange={setResetOpen} initial={account.deposited} />
     </main>
   )
 }

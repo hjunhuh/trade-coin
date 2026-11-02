@@ -12,10 +12,13 @@ import { safeStorage } from '../store'
 import {
   checkLiquidation,
   equity,
+  MAX_DEPOSIT,
+  MIN_DEPOSIT,
   newAccount,
   placeOrder,
   sampleEquity,
   settleFunding,
+  STARTING_BALANCE,
   type Account,
   type Fill,
   type OrderRequest,
@@ -72,9 +75,10 @@ export function order(sym: Sym, req: OrderRequest): Fill[] {
   return fills
 }
 
-/** Starts over with a fresh balance. */
-export function resetAccount() {
-  commit(newAccount(Date.now()))
+/** Starts over with `deposit` in a fresh account. Throws an AppError outside the allowed range. */
+export function resetAccount(deposit: number = STARTING_BALANCE) {
+  if (!(deposit >= MIN_DEPOSIT && deposit <= MAX_DEPOSIT)) throw new AppError('invalid_deposit', 'deposit out of range')
+  commit(newAccount(Date.now(), Math.floor(deposit * 100) / 100))
 }
 
 // --- Live checks -------------------------------------------------------------------------------

@@ -35,6 +35,9 @@ export const CONFIG: Config = {
 }
 
 export const STARTING_BALANCE = 10_000
+/** Range a reset may start from */
+export const MIN_DEPOSIT = 100
+export const MAX_DEPOSIT = 100_000_000
 
 /** Funding is settled at 00:00, 08:00 and 16:00 UTC */
 export const FUNDING_INTERVAL_MS = 8 * 3600 * 1000

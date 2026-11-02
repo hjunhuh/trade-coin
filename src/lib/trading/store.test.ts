@@ -28,7 +28,7 @@ vi.mock('../market/feed', async () => {
   }
 })
 
-const { useAccount, catchUp, order, onTradeEvent, watchPrices } = await import('./store')
+const { useAccount, catchUp, order, onTradeEvent, watchPrices, resetAccount } = await import('./store')
 const engine = await import('./engine')
 const feed = (await import('../market/feed')) as unknown as { __emit: (w: unknown) => void }
 
@@ -116,5 +116,29 @@ describe('catchUp', () => {
     await running
     unwatch()
     expect(useAccount.getState().account.positions.BTC).toBeUndefined()
+  })
+})
+
+describe('resetAccount', () => {
+  it('starts over from the chosen amount', () => {
+    let a = engine.newAccount(NOW, 1000)
+    a = engine.placeOrder(a, 'BTC', { side: 'long', sizePct: 50, leverage: 5 }, 100, NOW).account
+    useAccount.setState({ account: a, catchingUp: false })
+
+    resetAccount(250_000)
+    const after = useAccount.getState().account
+    expect(after.balance).toBe(250_000)
+    expect(after.deposited).toBe(250_000)
+    expect(after.positions).toEqual({})
+    expect(after.fills).toEqual([])
+    expect(after.history).toEqual([{ time: NOW, equity: 250_000 }])
+  })
+
+  it('refuses amounts outside the range and keeps the account', () => {
+    const before = useAccount.getState().account
+    expect(() => resetAccount(engine.MIN_DEPOSIT - 1)).toThrow('deposit out of range')
+    expect(() => resetAccount(engine.MAX_DEPOSIT + 1)).toThrow('deposit out of range')
+    expect(() => resetAccount(Number.NaN)).toThrow('deposit out of range')
+    expect(useAccount.getState().account).toBe(before)
   })
 })
